@@ -17,7 +17,8 @@ const valIds = { lCount: 'leftCountVal', rCount: 'rightCountVal', thick: 'thickn
 let isRunning = false, animationId;
 let particles = [];
 let floatingTexts = [];
-let baseSpeed = 0.8;
+// 【修改】將基礎速度由 0.8 提升至 1.6，讓 iPad 上的實驗節奏更順暢明快
+let baseSpeed = 1.6;
 
 let lastTimestamp = 0, chartUpdateAccumulator = 0, simTimeMs = 0;
 let crossLR_1s = 0, crossRL_1s = 0, crossLR_5s = 0, crossRL_5s = 0;
@@ -102,9 +103,8 @@ class Particle {
         this.vx = Math.cos(angle); this.vy = Math.sin(angle);
     }
 
-    // 【修改】加入 timeScale 以完美相容 120Hz/60Hz 螢幕
     update(speedMult, timeScale) {
-        if (Math.random() < (0.04 * timeScale)) { // 轉向機率也要根據時間調整
+        if (Math.random() < (0.04 * timeScale)) {
             let currentAngle = Math.atan2(this.vy, this.vx);
             let angleOffset = (Math.random() - 0.5) * (Math.PI / 3);
             let newAngle = currentAngle + angleOffset;
@@ -237,7 +237,6 @@ function drawBackgroundNumbers() {
     ctx.fillText(globalRCount, canvas.width * 0.75, canvas.height / 2);
 }
 
-// 【修改】浮動文字動畫也套用 timeScale 修正
 function drawFloatingTexts(timeScale) {
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         let ft = floatingTexts[i];
@@ -289,11 +288,16 @@ function drawMembrane() {
         let cx = center, lX = mLeft - 4, rX = mRight + 4;
 
         if (pType === 'aquaporin' || pType === 'na_channel') {
+            // 【修改】通道蛋白 (直管)，正確方向為上壁和下壁 (平行 =)
             ctx.strokeStyle = pType === 'aquaporin' ? '#00a8ff' : '#e67e22';
-            ctx.beginPath(); ctx.moveTo(lX, y - hOut); ctx.lineTo(lX, y + hOut); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(rX, y - hOut); ctx.lineTo(rX, y + hOut); ctx.stroke();
+
+            // 畫出上壁
+            ctx.beginPath(); ctx.moveTo(lX, y - hOut); ctx.lineTo(rX, y - hOut); ctx.stroke();
+            // 畫出下壁
+            ctx.beginPath(); ctx.moveTo(lX, y + hOut); ctx.lineTo(rX, y + hOut); ctx.stroke();
+
             ctx.fillStyle = pType === 'aquaporin' ? 'rgba(0, 168, 255, 0.15)' : 'rgba(230, 126, 34, 0.15)';
-            ctx.fillRect(lX, y - hOut, memThick + 8, hOut * 2);
+            ctx.fillRect(lX, y - hOut, rX - lX, hOut * 2);
         }
         else if (pType === 'glucose_carrier' || pType === 'aa_carrier') {
             ctx.strokeStyle = pType === 'glucose_carrier' ? '#2ecc71' : '#f1c40f';
@@ -354,7 +358,6 @@ function animate(timestamp) {
     let dt = timestamp - lastTimestamp;
     lastTimestamp = timestamp;
 
-    // 【修改】計算 TimeScale (標準 60Hz 螢幕每幀約 16.66ms，這可以確保在 120Hz 下速度一致)
     let timeScale = dt / 16.666;
 
     simTimeMs += dt; chartUpdateAccumulator += dt;

@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- 【修改】鎖定螢幕縮放，完美適應 iPad Safari 操作 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>細胞膜擴散模擬器 (全平台完美版)</title>
     <link rel="stylesheet" href="style.css">
@@ -93,10 +92,10 @@
                 <button id="resetBtn" class="btn btn-danger" title="將保留上次結果為殘影">重置並比較</button>
             </div>
 
-            <!-- 即時數據面板 -->
+            <!-- 即時數據面板 (修改為相容所有裝置的標準箭頭) -->
             <div class="stats-panel">
-                <div class="stats-row">過去1秒 (左 ➔ 右)： <span id="statLR">0</span></div>
-                <div class="stats-row">過去1秒 (左 🡨 右)： <span id="statRL">0</span></div>
+                <div class="stats-row">過去1秒 (左 → 右)： <span id="statLR">0</span></div>
+                <div class="stats-row">過去1秒 (左 ← 右)： <span id="statRL">0</span></div>
                 <div class="stats-row highlight-net" id="statNet">左至右的淨移動：0</div>
                 <hr>
                 <div class="stats-row highlight">初始擴散速率 (首5秒)： <span id="initRateDisplay">等待開始...</span></div>
