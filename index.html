@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 【修改】鎖定螢幕縮放，完美適應 iPad Safari 操作 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>細胞膜擴散模擬器 (全平台完美版)</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 上方/左側：動畫顯示區 -->
+        <div class="canvas-panel">
+            <canvas id="simCanvas"></canvas>
+        </div>
+
+        <!-- 下方/右側：控制面板與圖表 -->
+        <div class="control-panel">
+            <h2>擴散模擬控制台</h2>
+
+            <div class="control-group membrane-controls">
+                <label for="particleType">放入的物質：</label>
+                <select id="particleType">
+                    <optgroup label="細小非極性 (穿過磷脂)">
+                        <option value="O2">氧氣 (O2) - 紅色圓點</option>
+                        <option value="CO2">二氧化碳 (CO2) - 黑色白邊</option>
+                    </optgroup>
+                    <optgroup label="極性分子/離子 (需通道蛋白/載體蛋白)">
+                        <option value="H2O">水 (H2O) - 淺藍色</option>
+                        <option value="Na">鈉離子 (Na+) - 橙色帶字</option>
+                        <option value="Glucose">葡萄糖 - 綠色六角形</option>
+                        <option value="AminoAcid">氨基酸 - 黃色正方形</option>
+                    </optgroup>
+                    <optgroup label="大分子 (無法穿透)">
+                        <option value="Protein">蛋白質 - 藍色大圓</option>
+                    </optgroup>
+                </select>
+
+                <label style="margin-top:10px;">膜上的通道蛋白/載體蛋白：</label>
+                <select id="proteinType">
+                    <option value="none">無 (僅磷脂雙層)</option>
+                    <option value="aquaporin">水通道蛋白</option>
+                    <option value="na_channel">鈉離子通道蛋白</option>
+                    <option value="glucose_carrier">葡萄糖載體蛋白</option>
+                    <option value="aa_carrier">氨基酸載體蛋白</option>
+                </select>
+
+                <label style="margin-top:5px;">通道蛋白/載體蛋白數量： <span id="proteinCountVal">0</span>
+                    <span id="proteinLimitWarning"
+                        style="color: #e74c3c; font-size: 0.85em; display: none; font-weight: normal; margin-left: 5px;">(受限於空間已調整)</span>
+                </label>
+                <input type="range" id="proteinCount" min="0" max="5" value="0">
+
+                <!-- 教學提示框 -->
+                <div id="carrierTip" class="concept-tip">
+                    💡 <b>教學提示</b>：請注意！載體蛋白可進行主動或被動運輸。當進行圖中的「促進性擴散」時，雖然載體蛋白改變了形狀，但過程是<b>無需能量 (ATP)</b> 的。
+                </div>
+            </div>
+
+            <div class="control-group half-width-container">
+                <div class="half-width">
+                    <label>左側初始： <span id="leftCountVal">100</span></label>
+                    <input type="range" id="leftCount" min="0" max="100" value="100">
+                </div>
+                <div class="half-width">
+                    <label>右側初始： <span id="rightCountVal">0</span></label>
+                    <input type="range" id="rightCount" min="0" max="100" value="0">
+                </div>
+            </div>
+
+            <div class="control-group half-width-container">
+                <div class="half-width">
+                    <label>擴散距離 (外圍黏液)： <span id="thicknessVal">40</span></label>
+                    <input type="range" id="thicknessSlider" min="40" max="160" value="40" step="10">
+                </div>
+                <div class="half-width">
+                    <label>表面積： <span id="surfaceAreaVal">100</span>%</label>
+                    <input type="range" id="surfaceAreaSlider" min="20" max="100" step="10" value="100">
+                </div>
+            </div>
+
+            <div class="control-group" style="margin-bottom: 5px;">
+                <label>溫度 (°C)： <span id="tempVal">25</span></label>
+                <input type="range" id="tempSlider" min="0" max="100" value="25">
+            </div>
+
+            <div class="btn-group">
+                <button id="startBtn" class="btn btn-primary">開始/繼續</button>
+                <button id="pauseBtn" class="btn btn-warning">暫停</button>
+                <button id="resetBtn" class="btn btn-danger" title="將保留上次結果為殘影">重置並比較</button>
+            </div>
+
+            <!-- 即時數據面板 -->
+            <div class="stats-panel">
+                <div class="stats-row">過去1秒 (左 ➔ 右)： <span id="statLR">0</span></div>
+                <div class="stats-row">過去1秒 (左 🡨 右)： <span id="statRL">0</span></div>
+                <div class="stats-row highlight-net" id="statNet">左至右的淨移動：0</div>
+                <hr>
+                <div class="stats-row highlight">初始擴散速率 (首5秒)： <span id="initRateDisplay">等待開始...</span></div>
+            </div>
+
+            <!-- 單一主圖表 (累積濃度變化圖) -->
+            <div class="chart-container">
+                <canvas id="qtyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
